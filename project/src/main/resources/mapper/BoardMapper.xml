@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.si.project">
+<select id="boardList" resultType="com.si.project.VO.BoardVO" parameterType="com.si.project.VO.Criteria">
+	SELECT b_idx,
+			b_subject,
+			b_content,
+			b_writer,
+			b_readnum,
+			b_writedate
+	 FROM (
+	 		SELECT b_idx,
+	 			   b_subject,
+	 			   b_content,
+	 			   b_writer,
+	 			   b_readnum,
+	 			   b_writedate,
+	 			   ROW_NUMBER() OVER(ORDER BY b_idx DESC) AS RNUM
+	 		 FROM board  
+	WHERE 1=1 
+		<include refid="search"></include>
+				) A 
+				WHERE RNUM BETWEEN #{rowStart} AND #{rowEnd} 
+				ORDER BY b_idx DESC
+</select>
+
+<insert id="boardWrite" parameterType="com.si.project.VO.BoardVO">
+INSERT INTO board(b_idx,b_subject,b_content,b_writer,b_readnum,b_writedate) 
+VALUES(
+board_b_idx.nextval
+, #{b_subject}
+, #{b_content}
+, #{b_writer}
+, 0
+, sysdate
+)
+</insert>
+<delete id="boardDelete" parameterType="Integer">
+DELETE FROM board WHERE b_idx=#{b_idx}
+</delete>
+<select id="boardContent" parameterType="Integer" resultType="com.si.project.VO.BoardVO">
+SELECT * FROM board WHERE b_idx=#{b_idx}
+</select>
+<update id="boardUpdate" parameterType="com.si.project.VO.BoardVO">
+UPDATE board 
+SET
+b_subject=#{b_subject},
+b_writer=#{b_writer},
+b_content=#{b_content}
+WHERE b_idx=#{b_idx}
+</update>
+<update id="boardReadnum" parameterType="Integer">
+UPDATE board 
+SET b_readnum=b_readnum+1
+WHERE
+b_idx=#{b_idx} 
+</update>
+
+<select id="listCount" resultType="Integer">
+SELECT
+	count(b_idx)
+FROM
+	board WHERE 1=1
+	<include refid="search"></include>
+		AND b_idx > 0 
+</select>
+
+<sql id="search">
+	<if test="searchType != null">
+	<if test="searchType == 's'.toString()">AND b_subject LIKE '%' || #{keyword} || '%'</if>
+	<if test="searchType == 'c'.toString()">AND b_content LIKE '%' || #{keyword} || '%'</if>
+	<if test="searchType == 'w'.toString()">AND b_writer LIKE '%' || #{keyword} || '%'</if>
+	<if test="searchType == 'sc'.toString()">AND (b_subject LIKE '%' || #{keyword} || '%') or (b_content LIKE '%' || #{keyword} || '%')</if>
+	</if>
+</sql>
+</mapper>

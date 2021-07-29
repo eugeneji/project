@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.si.project">
+<insert id="memberJoin">
+INSERT INTO b_member (mem_idx,mem_email,mem_pass,mem_name,mem_sex,mem_addr,
+mem_addr_detail,mem_tel,mem_grade,mem_img,join_date) 
+VALUES(b_member_mem_idx.nextval,
+	#{mem_email},
+	#{mem_pass},
+	#{mem_name},
+	#{mem_sex},
+	#{mem_addr},
+	#{mem_addr_detail},
+	#{mem_tel},
+	#{mem_grade},
+	#{mem_img},
+	sysdate
+)
+</insert>
+<select id="memberLogin" parameterType="com.si.project.VO.MemberVO" resultType="com.si.project.VO.MemberVO">
+SELECT mem_email,mem_pass
+FROM b_member
+WHERE mem_email=#{mem_email} AND mem_pass=#{mem_pass}
+</select>
+<select id="passChk" resultType="Integer">
+SELECT COUNT(*) FROM b_member
+WHERE mem_email=#{mem_email} AND mem_pass=#{mem_pass}
+</select>
+<delete id="memberDelete">
+DELETE FROM b_member
+WHERE mem_email =#{mem_email} AND mem_pass=#{mem_pass}
+</delete>
+</mapper>
